@@ -7,17 +7,17 @@
         protected $generatedName = '';
         protected $depth;
         protected $currentNummeration;
+        /** @var \Pimcore_Document_Structure */
+        protected $parent = null;
 
-        function __construct($name = '', $blocks = null, $numeration = array(), $type = 'node', $depth = 0, $currentNummeration = 1) {
-            $this->setBlocks($blocks);
-            $this->setNumeration($numeration);
+        const NTH_CURRENT = 'current';
+        const NTH_NEXT = 'current';
+
+        function __construct($name = '', $tag = null, Pimcore_Document_Structure $parent = null, $type = 'node', $currentNummeration = 1) {
             $this->nodeName = $name;
             $this->type = $type;
-            $this->depth = $depth;
-            $this->currentNummeration = $currentNummeration;
-
-            if($this->getName())
-                $this->blocks[] = $this->getName();
+            $this->setParent($parent);
+            $this->setCurrentNummeration($currentNummeration);
         }
 
         function getName() {
@@ -27,10 +27,16 @@
 
             $name = $this->nodeName;
 
-            if (is_array($this->blocks) and count($this->blocks) > 0) {
+            if($this->getParent())
+                $blocks = $this->getParent()->getBlocks();
+            else
+                $blocks = array();
+
+            $tmpNumeration = $this->getNumeration();
+
+            if (is_array($blocks) and count($blocks) > 0) {
                 if ($this->type == "block") {
-                    $tmpBlocks = $this->blocks;
-                    $tmpNumeration = $this->numeration;
+                    $tmpBlocks = $blocks;
                     array_pop($tmpBlocks);
                     array_pop($tmpNumeration);
 
@@ -39,12 +45,12 @@
                         $tmpName = $name . implode("_", $tmpBlocks) . implode("_", $tmpNumeration);
                     }
 
-                    if ($this->blocks[count($this->blocks) - 1] == $tmpName) {
-                        array_pop($this->blocks);
-                        array_pop($this->numeration);
+                    if ($blocks[count($blocks) - 1] == $tmpName) {
+                        array_pop($blocks);
+                        array_pop($tmpNumeration);
                     }
                 }
-                $name = $name . implode("_", $this->blocks) . implode("_", $this->numeration);
+                $name = $name . implode("_", $blocks) . implode("_", $this->getNumeration());
 
             }
 
@@ -53,34 +59,45 @@
             return $name;
         }
 
-        function addTag($name) {
+        function addTag($name, Document_Tag $tag = null, $nth = self::NTH_CURRENT) {
 
-            $tmpNumeration = array();
+            if($nth == self::NTH_CURRENT)
+                $nth = $this->getCurrentNummeration();
 
-            if($this->depth > 0) {
-                $tmpNumeration = $this->numeration;
-                $tmpNumeration[] = $this->currentNummeration;
-            }
+            if($nth == self::NTH_NEXT)
+                $nth = $this->getCurrentNummeration() + 1;
 
-            $node = new static($name, $this->blocks, $tmpNumeration, 'block', $this->depth + 1);
+            $node = new static($name, $tag, $this, 'block', $nth);
             return $node;
         }
 
-        function addSibling($name, $nth = null) {
+        function addSibling($name, Document_Tag $tag = null, $nth = self::NTH_CURRENT) {
 
-            if($nth !== null)
-                $nth = $this->currentNummeration + 1;
+            if($nth == self::NTH_CURRENT)
+                $nth = $this->getCurrentNummeration();
 
-            $node = new static($name, $this->blocks, $this->numeration, 'block', $this->depth + 1, $nth);
+            if($nth == self::NTH_NEXT)
+                $nth = $this->getCurrentNummeration() + 1;
+
+            $node = new static($name, $tag, $this->getParent(), 'block', $this->currentNummeration);
             return $node;
         }
 
-        public function setBlocks($blocks) {
-            $this->blocks = $blocks;
+        function Up() {
+            return $this->getParent();
         }
 
         public function getBlocks() {
-            return $this->blocks;
+
+            $tmpBlocks = array();
+
+            if($this->getParent())
+                $tmpBlocks = $this->getParent()->getBlocks();
+
+            if($this->getName())
+                $tmpBlocks[] = $this->getName();
+
+            return $tmpBlocks;
         }
 
         public function setNumeration($numeration) {
@@ -88,7 +105,15 @@
         }
 
         public function getNumeration() {
-            return $this->numeration;
+
+            $tmpNumeration = array();
+
+            if($this->getDepth() > 1) {
+                $tmpNumeration = $this->getParent()->getNumeration();
+                $tmpNumeration[] = $this->getCurrentNummeration();
+            }
+
+            return $tmpNumeration;
         }
 
         public function setNodeName($nodeName) {
@@ -97,6 +122,54 @@
 
         public function getNodeName() {
             return $this->nodeName;
+        }
+
+        public function setCurrentNummeration($currentNummeration)
+        {
+            $this->currentNummeration = $currentNummeration;
+        }
+
+        public function getCurrentNummeration()
+        {
+            return $this->currentNummeration;
+        }
+
+        public function getDepth()
+        {
+            if(!$this->getParent())
+                return 0;
+
+            return $this->getParent()->getDepth() + 1;
+        }
+
+        public function setGeneratedName($generatedName)
+        {
+            $this->generatedName = $generatedName;
+        }
+
+        public function getGeneratedName()
+        {
+            return $this->generatedName;
+        }
+
+        public function setParent($parent)
+        {
+            $this->parent = $parent;
+        }
+
+        public function getParent()
+        {
+            return $this->parent;
+        }
+
+        public function setType($type)
+        {
+            $this->type = $type;
+        }
+
+        public function getType()
+        {
+            return $this->type;
         }
     }
 
