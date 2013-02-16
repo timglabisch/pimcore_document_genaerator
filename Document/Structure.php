@@ -11,11 +11,10 @@
         protected $parent = null;
 
         const NTH_CURRENT = 'current';
-        const NTH_NEXT = 'current';
+        const NTH_NEXT = 'next';
 
-        function __construct($name = '', $tag = null, Pimcore_Document_Structure $parent = null, $type = 'node', $currentNummeration = 1) {
+        function __construct($name = '', $tag = null, Pimcore_Document_Structure $parent = null, $currentNummeration = 1) {
             $this->nodeName = $name;
-            $this->type = $type;
             $this->setParent($parent);
             $this->setCurrentNummeration($currentNummeration);
         }
@@ -67,7 +66,7 @@
             if($nth == self::NTH_NEXT)
                 $nth = $this->getCurrentNummeration() + 1;
 
-            $node = new static($name, $tag, $this, 'block', $nth);
+            $node = new static($name, $tag, $this, $nth);
             return $node;
         }
 
@@ -79,7 +78,7 @@
             if($nth == self::NTH_NEXT)
                 $nth = $this->getCurrentNummeration() + 1;
 
-            $node = new static($name, $tag, $this->getParent(), 'block', $this->currentNummeration);
+            $node = new static($name, $tag, $this->getParent(), $nth);
             return $node;
         }
 
