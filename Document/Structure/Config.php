@@ -2,11 +2,6 @@
     class Pimcore_Document_Structure_Config {
         protected $currentNummeration;
 
-        static function fromStructure(Pimcore_Document_Structure $structure) {
-            $s = new static;
-            $s->setCurrentNummeration(1);
-        }
-
         public function __construct() {
             $this->setCurrentNummeration(1);
         }
