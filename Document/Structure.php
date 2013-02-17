@@ -96,7 +96,7 @@ class Pimcore_Document_Structure {
                 $node->getTag()->indices = range(1, $node->maxNummerations);
             }
 
-            if(isset($buffer[$node->getName()])) {
+            if(isset($buffer[$node->getName()]) && $node->getTag() instanceof Document_Tag_Block) {
                 $buffer[$node->getName()]->getTag()->indices = range(1, ++$node->maxNummerations);
                 continue;
             }
