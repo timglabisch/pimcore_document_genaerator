@@ -71,7 +71,7 @@
 
         function addChild($name, Document_Tag $tag = null, $nth = self::NTH_CURRENT) {
 
-            $currentNummeration = $this->getCurrentNummeration();
+            $currentNummeration = 1;
             $nodeConfig = new Pimcore_Document_Structure_Config();
 
             if($this->getConfig())
@@ -83,7 +83,7 @@
 
             $nodeConfig->setCurrentNummeration($currentNummeration);
 
-            return new static($name, $tag, $this, $currentNummeration, $nodeConfig);
+            return new static($name, $tag, $this, 1, $nodeConfig);
         }
 
         function addSblng($name, Document_Tag $tag = null, $nth = self::NTH_CURRENT) {
@@ -92,7 +92,7 @@
 
         function addSibling($name, Document_Tag $tag = null, $nth = self::NTH_CURRENT) {
 
-            $currentNummeration = $this->getCurrentNummeration();
+            $currentNummeration = 1;
             $nodeConfig = new Pimcore_Document_Structure_Config();
 
             if($this->getConfig())
@@ -104,7 +104,7 @@
 
             $nodeConfig->setCurrentNummeration($currentNummeration);
 
-            return new static($name, $tag, $this->getParent(), $currentNummeration, $nodeConfig);
+            return new static($name, $tag, $this->getParent(), 1, $nodeConfig);
         }
 
         function Up() {
@@ -163,7 +163,12 @@
 
             if($this->getDepth() > 1) {
                 $tmpNumeration = $this->getParent()->getNumeration();
-                $tmpNumeration[] = $this->getCurrentNummeration();
+
+                $currentNummeration = $this->getCurrentNummeration();
+                if($this->getConfig())
+                    $currentNummeration = $this->getConfig()->getCurrentNummeration();
+
+                $tmpNumeration[] = $currentNummeration;
             }
 
             return $tmpNumeration;
