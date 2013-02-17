@@ -3,20 +3,32 @@
         protected $blocks = array();
         protected $numeration = array();
         protected $nodeName = '';
-        protected $type;
         protected $generatedName = '';
         protected $depth;
         protected $currentNummeration;
         /** @var \Pimcore_Document_Structure */
         protected $parent = null;
+        /** @var \Pimcore_Document_Structure_Config */
+        protected $config = null;
+        protected $structure_children = array();
+        protected $tag;
 
         const NTH_CURRENT = 'current';
         const NTH_NEXT = 'next';
 
-        function __construct($name = '', $tag = null, Pimcore_Document_Structure $parent = null, $currentNummeration = 1) {
+        function __construct($name = '', $tag = null, Pimcore_Document_Structure $parent = null, $currentNummeration = 1, $config = null) {
             $this->nodeName = $name;
             $this->setParent($parent);
             $this->setCurrentNummeration($currentNummeration);
+            $this->setTag($tag);
+
+            if($config === null)
+                $this->config = Pimcore_Document_Structure_Config::fromStructure($this);
+
+            $this->config = $config;
+
+            if($this->getParent())
+                $this->getParent()->addStructureChild($this);
         }
 
         function getName() {
@@ -34,23 +46,22 @@
             $tmpNumeration = $this->getNumeration();
 
             if (is_array($blocks) and count($blocks) > 0) {
-                if ($this->type == "block") {
-                    $tmpBlocks = $blocks;
-                    array_pop($tmpBlocks);
-                    array_pop($tmpNumeration);
 
-                    $tmpName = $this->nodeName;
-                    if (is_array($tmpBlocks)) {
-                        $tmpName = $name . implode("_", $tmpBlocks) . implode("_", $tmpNumeration);
-                    }
+                $tmpBlocks = $blocks;
+                array_pop($tmpBlocks);
+                array_pop($tmpNumeration);
 
-                    if ($blocks[count($blocks) - 1] == $tmpName) {
-                        array_pop($blocks);
-                        array_pop($tmpNumeration);
-                    }
+                $tmpName = $this->nodeName;
+                if (is_array($tmpBlocks)) {
+                    $tmpName = $name . implode("_", $tmpBlocks) . implode("_", $tmpNumeration);
                 }
-                $name = $name . implode("_", $blocks) . implode("_", $this->getNumeration());
 
+                if ($blocks[count($blocks) - 1] == $tmpName) {
+                    array_pop($blocks);
+                    array_pop($tmpNumeration);
+                }
+
+                $name = $name . implode("_", $blocks) . implode("_", $this->getNumeration());
             }
 
             $this->generatedName = $name;
@@ -58,32 +69,67 @@
             return $name;
         }
 
-        function addTag($name, Document_Tag $tag = null, $nth = self::NTH_CURRENT) {
+        function addChild($name, Document_Tag $tag = null, $nth = self::NTH_CURRENT) {
 
-            if($nth == self::NTH_CURRENT)
-                $nth = $this->getCurrentNummeration();
+            $currentNummeration = $this->getCurrentNummeration();
+            $nodeConfig = new Pimcore_Document_Structure_Config();
 
-            if($nth == self::NTH_NEXT)
-                $nth = $this->getCurrentNummeration() + 1;
+            if($this->getConfig())
+                $currentNummeration = $this->getConfig()->getCurrentNummeration();
 
-            $node = new static($name, $tag, $this, $nth);
-            return $node;
+            if($nth == self::NTH_NEXT) {
+                $currentNummeration += 1;
+                $nodeConfig->setCurrentNummeration($currentNummeration);
+            }
+
+            return new static($name, $tag, $this, $currentNummeration, $nodeConfig);
+        }
+
+        function addSblng($name, Document_Tag $tag = null, $nth = self::NTH_CURRENT) {
+            return $this->addSibling($name, $tag, $nth);
         }
 
         function addSibling($name, Document_Tag $tag = null, $nth = self::NTH_CURRENT) {
 
-            if($nth == self::NTH_CURRENT)
-                $nth = $this->getCurrentNummeration();
+            $currentNummeration = $this->getCurrentNummeration();
+            $nodeConfig = new Pimcore_Document_Structure_Config();
 
-            if($nth == self::NTH_NEXT)
-                $nth = $this->getCurrentNummeration() + 1;
+            if($this->getConfig())
+                $currentNummeration = $this->getConfig()->getCurrentNummeration();
 
-            $node = new static($name, $tag, $this->getParent(), $nth);
-            return $node;
+            if($nth == self::NTH_NEXT) {
+                $currentNummeration += 1;
+                $nodeConfig->setCurrentNummeration($currentNummeration);
+            }
+
+            return new static($name, $tag, $this->getParent(), $currentNummeration, $nodeConfig);
         }
 
         function Up() {
             return $this->getParent();
+        }
+
+        public function getNodes() {
+
+            $nodes = $this->getStructureChildren();
+            foreach($this->getStructureChildren() as $n)
+                $nodes = array_merge($nodes, $n->getNodes());
+
+            return $nodes;
+        }
+
+        public function getElements() {
+
+            $nodes = $this->getNodes();
+
+            if(empty($nodes))
+                return array();
+
+            $buffer = array();
+            foreach($nodes as $node)
+                $buffer[$node->getName()] = $node->getTag();
+
+            return $buffer;
         }
 
         public function getBlocks() {
@@ -133,6 +179,26 @@
             return $this->currentNummeration;
         }
 
+        public function nextBlock($cnt = 1) {
+            if(!$this->getConfig())
+                throw new \Exception('cant use nextBlock on Root Element');
+
+            $this->getConfig()->setCurrentNummeration($this->getConfig()->getCurrentNummeration() + $cnt);
+            return $this;
+        }
+
+        public function prevBlock($cnt = 1) {
+            return $this->nextBlock($cnt * -1);
+        }
+
+        public function block($position) {
+            if($this->getConfig())
+                throw new \Exception('cant use nextBlock on Root Element');
+
+            $this->getConfig()->setCurrentNummeration($position);
+            return $this;
+        }
+
         public function getDepth()
         {
             if(!$this->getParent())
@@ -169,6 +235,36 @@
         public function getType()
         {
             return $this->type;
+        }
+
+        public function addStructureChild(Pimcore_Document_Structure $child) {
+            $this->structure_children[] = $child;
+        }
+
+        /** @return Pimcore_Document_Structure[] */
+        public function getStructureChildren()
+        {
+            return $this->structure_children;
+        }
+
+        public function setTag($tag)
+        {
+            $this->tag = $tag;
+        }
+
+        public function getTag()
+        {
+            return $this->tag;
+        }
+
+        public function setConfig($config)
+        {
+            $this->config = $config;
+        }
+
+        public function getConfig()
+        {
+            return $this->config;
         }
     }
 
