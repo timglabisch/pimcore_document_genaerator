@@ -4,7 +4,7 @@
 
         static function fromStructure(Pimcore_Document_Structure $structure) {
             $s = new static;
-            $s->setCurrentNummeration($structure->getCurrentNummeration());
+            $s->setCurrentNummeration(1);
         }
 
         public function __construct() {

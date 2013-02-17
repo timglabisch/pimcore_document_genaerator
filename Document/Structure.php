@@ -79,8 +79,9 @@
 
             if($nth == self::NTH_NEXT) {
                 $currentNummeration += 1;
-                $nodeConfig->setCurrentNummeration($currentNummeration);
             }
+
+            $nodeConfig->setCurrentNummeration($currentNummeration);
 
             return new static($name, $tag, $this, $currentNummeration, $nodeConfig);
         }
@@ -99,8 +100,9 @@
 
             if($nth == self::NTH_NEXT) {
                 $currentNummeration += 1;
-                $nodeConfig->setCurrentNummeration($currentNummeration);
             }
+
+            $nodeConfig->setCurrentNummeration($currentNummeration);
 
             return new static($name, $tag, $this->getParent(), $currentNummeration, $nodeConfig);
         }
@@ -126,8 +128,14 @@
                 return array();
 
             $buffer = array();
-            foreach($nodes as $node)
+            foreach($nodes as $node) {
+
+                if($node->getTag() instanceof \Document_Tag_Block)
+                    $node->getTag()->indices = range(1, $node->getConfig()->getCurrentNummeration());
+
+                $node->getTag()->setName($node->getName());
                 $buffer[$node->getName()] = $node->getTag();
+            }
 
             return $buffer;
         }

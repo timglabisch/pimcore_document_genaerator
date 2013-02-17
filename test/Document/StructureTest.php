@@ -1,7 +1,7 @@
 <?php
 
-require_once __DIR__.'/../../Document/Structure.php';
-require_once __DIR__.'/../../Document/Structure/Config.php';
+require_once __DIR__ . '/../../Document/Structure.php';
+require_once __DIR__ . '/../../Document/Structure/Config.php';
 
 class tl extends PHPUnit_Framework_TestCase {
 
