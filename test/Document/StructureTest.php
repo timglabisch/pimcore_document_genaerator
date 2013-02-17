@@ -89,15 +89,14 @@ class tl extends PHPUnit_Framework_TestCase {
                     ->addSblng('_ROOT-BLOCK3-INP3_', $getNewDocumentTag('_ROOT-BLOCK3-INP3_2'), 2)
                     ->addSblng('_ROOT-BLOCK3-BLOCK4_', $getNewDocumentTagBlock('_ROOT-BLOCK3-BLOCK4_2'), 2)
                         ->addChild('_ROOT-BLOCK3-BLOCK4-BLOCK5_', $getNewDocumentTagBlock('_ROOT-BLOCK3-BLOCK4-BLOCK5_2'))
-                        ->addChild('_ROOT-BLOCK3-BLOCK4-BLOCK5-INP1_', $getNewDocumentTag('_ROOT-BLOCK3-BLOCK4-BLOCK5-INP1_2'))
-                        ->addSblng('_ROOT-BLOCK3-BLOCK4-BLOCK5-INP2_', $getNewDocumentTag('_ROOT-BLOCK3-BLOCK4-BLOCK5-INP2_2'))
-                    ->Up()
-                    ->addSblng('_ROOT-BLOCK3-BLOCK4-BLOCK5_', $getNewDocumentTagBlock('_ROOT-BLOCK3-BLOCK4-BLOCK5_2'))
-                    ->addChild('_ROOT-BLOCK3-BLOCK4-BLOCK5-INP1_', $getNewDocumentTag('_NEXT_ROOT-BLOCK3-BLOCK4-BLOCK5-INP1_2'), 2)
-                    ->addSblng('_ROOT-BLOCK3-BLOCK4-BLOCK5-INP2_', $getNewDocumentTag('_NEXT_ROOT-BLOCK3-BLOCK4-BLOCK5-INP2_2'), 2)
-                ->Up()
-                ->addSblng('_ROOT-BLOCK3-BLOCK4-INP1_', $getNewDocumentTag('_ROOT-BLOCK3-BLOCK4-INP1_2'))
-                ->addSblng('_ROOT-BLOCK3-BLOCK4-INP2_', $getNewDocumentTag('_ROOT-BLOCK3-BLOCK4-INP2_2'))
+                            ->addChild('_ROOT-BLOCK3-BLOCK4-BLOCK5-INP1_', $getNewDocumentTag('_ROOT-BLOCK3-BLOCK4-BLOCK5-INP1_2'))
+                            ->addSblng('_ROOT-BLOCK3-BLOCK4-BLOCK5-INP2_', $getNewDocumentTag('_ROOT-BLOCK3-BLOCK4-BLOCK5-INP2_2'))
+                        ->Up()
+                        ->addSblng('_ROOT-BLOCK3-BLOCK4-BLOCK5_', $getNewDocumentTagBlock('_ROOT-BLOCK3-BLOCK4-BLOCK5_2'))
+                        ->addChild('_ROOT-BLOCK3-BLOCK4-BLOCK5-INP1_', $getNewDocumentTag('_NEXT_ROOT-BLOCK3-BLOCK4-BLOCK5-INP1_2'), 2)
+                        ->addSblng('_ROOT-BLOCK3-BLOCK4-BLOCK5-INP2_', $getNewDocumentTag('_NEXT_ROOT-BLOCK3-BLOCK4-BLOCK5-INP2_2'), 2)
+
+
         ;
 
         $this->assertEquals(
@@ -120,8 +119,6 @@ class tl extends PHPUnit_Framework_TestCase {
                 '_ROOT-BLOCK3-INP3__ROOT-BLOCK3_2',
                 '_ROOT-BLOCK3-BLOCK4__ROOT-BLOCK3_2',
                 '_ROOT-BLOCK3-BLOCK4-BLOCK5__ROOT-BLOCK3___ROOT-BLOCK3-BLOCK4__ROOT-BLOCK3_22_1',
-                '_ROOT-BLOCK3-BLOCK4-INP1__ROOT-BLOCK3___ROOT-BLOCK3-BLOCK4__ROOT-BLOCK3_22_1',
-                '_ROOT-BLOCK3-BLOCK4-INP2__ROOT-BLOCK3___ROOT-BLOCK3-BLOCK4__ROOT-BLOCK3_22_1',
                 '_ROOT-BLOCK3-BLOCK4-BLOCK5-INP1__ROOT-BLOCK3___ROOT-BLOCK3-BLOCK4__ROOT-BLOCK3_2__ROOT-BLOCK3-BLOCK4-BLOCK5__ROOT-BLOCK3___ROOT-BLOCK3-BLOCK4__ROOT-BLOCK3_22_12_1_1',
                 '_ROOT-BLOCK3-BLOCK4-BLOCK5-INP2__ROOT-BLOCK3___ROOT-BLOCK3-BLOCK4__ROOT-BLOCK3_2__ROOT-BLOCK3-BLOCK4-BLOCK5__ROOT-BLOCK3___ROOT-BLOCK3-BLOCK4__ROOT-BLOCK3_22_12_1_1',
                 '_ROOT-BLOCK3-BLOCK4-BLOCK5-INP1__ROOT-BLOCK3___ROOT-BLOCK3-BLOCK4__ROOT-BLOCK3_2__ROOT-BLOCK3-BLOCK4-BLOCK5__ROOT-BLOCK3___ROOT-BLOCK3-BLOCK4__ROOT-BLOCK3_22_12_1_2',
