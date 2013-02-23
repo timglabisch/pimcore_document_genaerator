@@ -29,8 +29,15 @@ class Document_Parser_Test extends PHPUnit_Framework_TestCase {
             ->addChild('A')
                 ->addChild('B')
                     ->addChild('C')
-                        ->addChild('D')
-                            ->addChild('A');
+                        ->addChild('D');
+
+        $c
+            ->addChild('E')
+            ->addChild('F')
+            ->addChild('G')
+            ->addChild('H');
+
+
 
         $elements = $c->getElements();
         $names = array_keys($elements);
@@ -41,20 +48,40 @@ class Document_Parser_Test extends PHPUnit_Framework_TestCase {
             return (strlen($a) < strlen($b) ? -1 : 1);
         });
 
+        $children = array();
+
         do {
             $matches = 0;
+            $buffer = array();
             echo "\n-------------------\n";
 
             for($i=0; $i < $names_c; $i++) {
                 for($j=0; $j < $names_c; $j++) {
 
-                    if(!$ret = preg_replace('/^[0-9\_]*'.preg_quote($names[$i]).'/i', '', $names[$j], 1))
+                    $c = 0;
+                    $ret = preg_replace('/^[0-9\_]*'.preg_quote($names[$i]).'/i', '', $names[$j], 1, $c);
+
+
+                    if(!$c) {
                         continue;
+                    }
+
 
                     echo "$names[$j] ($ret) is child of $names[$i] \n";
 
-                    if($names[$j] == $ret)
+                    if(!isset($children[$names[$i]]))
+                        $children[$names[$i]] = array('extends' => array());
+
+                    if(!isset($children[$names[$j]]))
+                        $children[$names[$j]] = array('extends' => array());
+
+                    $children[$names[$j]]['extends'][] = $ret;
+
+                    $children[$names[$j]][$ret] = $names[$i];
+
+                    if(!$ret) {
                         continue;
+                    }
 
                     $names[$j] = $ret;
 
@@ -62,6 +89,31 @@ class Document_Parser_Test extends PHPUnit_Framework_TestCase {
                 }
             }
         } while($matches);
+
+        foreach($children as $k => $child) {
+            foreach($child as $ik => $ichild) {
+                if($ik !== 'extends')
+                    continue;
+
+                foreach($ichild as $iik => $iichild) {
+                    if(!isset($children[$iichild]))
+                        continue;
+
+                    $children[$k] = array_merge($children[$k], $children[$iichild]);
+                }
+            }
+
+        }
+
+        foreach($children as $k => $child) {
+            if(!in_array($k, $names))
+                unset($children[$k]);
+
+            foreach($child as $ik => $node) {
+                if(!in_array($ik, $names))
+                    unset($children[$k][$ik]);
+            }
+        }
 
         var_dump($names);
 
