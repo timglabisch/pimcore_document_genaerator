@@ -21,7 +21,7 @@ class Document_Parser_Test extends PHPUnit_Framework_TestCase {
         $this->assertEquals($parser->getDepth($element), 4);
     }
 
-    function testGetElementsTree() {
+    function testGetElementsNames() {
         $c = new Pimcore_Document_Structure();
 
         $c
@@ -39,7 +39,7 @@ class Document_Parser_Test extends PHPUnit_Framework_TestCase {
         );
     }
 
-    function testGetElementsTreeSingle() {
+    function testGetElementsNamesSingle() {
         $c = new Pimcore_Document_Structure();
 
         $c->addChild('A');
@@ -52,7 +52,7 @@ class Document_Parser_Test extends PHPUnit_Framework_TestCase {
         );
     }
 
-    function testGetElementsTreeMultipleNodes() {
+    function testGetElementsNamesMultipleNodes() {
         $c = new Pimcore_Document_Structure();
 
         $c
@@ -74,6 +74,29 @@ class Document_Parser_Test extends PHPUnit_Framework_TestCase {
         $this->assertEquals(
             array('F', 'G', 'A', 'B', 'C', 'D', 'H', 'E'),
             $parser->getElementsNames($c->getElements())
+        );
+    }
+
+    function testGetElementsTree() {
+        $c = new Pimcore_Document_Structure();
+
+        $c
+            ->addChild('A')
+            ->addChild('B')
+            ->addChild('C')
+            ->addChild('D');
+
+
+        $parser = new Pimcore_Document_Parser('refactor ...');
+
+        $this->assertEquals(
+            array(
+                'DA_BA1_CA_BA11_11_1_1' => array('A','B','C', 'D'),
+                'CA_BA11_1' => array('A','B', 'C'),
+                'BA1' => array('A', 'B'),
+                'A' => array('A')
+            ),
+            $parser->getElementsTree($c->getElements())
         );
     }
 

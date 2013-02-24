@@ -38,8 +38,9 @@ class Pimcore_Document_Parser {
                 for($j=0; $j < $names_c; $j++) {
 
                     $c = 0;
-                    if(!$ret = preg_replace('/^[0-9\_]*'.preg_quote($names[$i]).'/i', '', $names[$j], 1, $c))
+                    if(!$ret = preg_replace('/^[0-9\_]*'.preg_quote($names[$i]).'/i', '', $names[$j], 1, $c)) {
                         continue;
+                    }
 
                     if(!$c)
                         continue;
@@ -66,7 +67,12 @@ class Pimcore_Document_Parser {
             return (strlen($a) > strlen($b) ? -1 : 1);
         });
 
-        $originalNames_copy = $originalNames;
+        $originalNames_copy = array();
+        foreach($originalNames as $v)
+            $originalNames_copy[] = array(
+                'name' => $v,
+                'matches' => array()
+            );
 
         do {
             $matches = 0;
@@ -82,13 +88,6 @@ class Pimcore_Document_Parser {
 
                     if(!$c)
                         continue;
-
-                    if(!is_array($originalNames_copy[$j]['matches']))  {
-                        $originalNames_copy[$j] = array(
-                            'name' => $originalNames_copy[$j],
-                            'matches' => array()
-                        );
-                    }
 
                     $originalNames_copy[$j]['matches'][] = $names[$i];
                     $originalNames[$j] = $ret;
@@ -118,6 +117,11 @@ class Pimcore_Document_Parser {
         foreach($originalNames_copy as $m) {
 
             $rounds = -1;
+
+            // may its a root node
+            if(count($m['matches']) == 0)
+                $buffer[$m['name']][] = $m['name'];
+
             for($i = count($m['matches']) - 1; $i >= 0; $i--) {
 
                 $rounds++;
