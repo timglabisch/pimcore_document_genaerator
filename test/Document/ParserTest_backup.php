@@ -1,29 +1,51 @@
 <?php
-class Pimcore_Document_Parser {
 
-    protected $name;
+require_once __DIR__ . '/../../Document/Parser.php';
 
-    function __construct() {
 
+class Document_Parser_Test extends PHPUnit_Framework_TestCase {
+
+    function testNested() {
+
+        $c = new Pimcore_Document_Structure();
+
+        $c
+            ->addChild('ROOT-BLOCK3')
+                ->addChild('_ROOT-BLOCK3-BLOCK4_')
+                    ->addChild('ROOT-BLOCK3-BLOCK4-BLOCK5')
+                        ->addChild('_ROOT-BLOCK3-BLOCK4-INP2');
+
+        $elements = $c->getElements();
+        $element = array_pop(array_keys($elements));
+        $parser = new Pimcore_Document_Parser($element);
+        $this->assertEquals($parser->getDepth(), 4);
     }
 
-    function getDepth($elementName) {
-        $nameArr = array_reverse(explode('_', $elementName));
+    function testFoo() {
 
-        $i = 1;
+        $c = new Pimcore_Document_Structure();
 
-        foreach($nameArr as $v) {
-            if(!is_numeric($v))
-                break;
-            $i++;
-        }
+        $c
+            ->addChild('A')
+                ->addChild('B')
+                    ->addChild('C')
+                        ->addChild('D');
 
-        return $i;
-    }
+        $c
+            ->addChild('E')
+            ->addChild('F')
+            ->addChild('G')
+            ->addChild('H');
 
-    function getElementsNames($elements) {
+
+
+        $elements = $c->getElements();
         $names = array_keys($elements);
+
+        $originalNames = $names;
         $names = array_map('strrev', $names);
+
+
         $names_c = count($names);
 
         do {
@@ -32,8 +54,9 @@ class Pimcore_Document_Parser {
             for($i=0; $i < $names_c; $i++) {
 
                 usort($names, function($a, $b) {
-                    return (strlen($a) > strlen($b) ? -1 : 1);
+                    return (strlen($a) < strlen($b) ? -1 : 1);
                 });
+
 
                 for($j=0; $j < $names_c; $j++) {
 
@@ -51,15 +74,12 @@ class Pimcore_Document_Parser {
             }
         } while($matches);
 
-        return $names;
-    }
 
-    function getElementsTree($elements) {
 
-        $originalNames = array_keys($elements);
+        var_dump($names);
+
+
         $originalNames_c = count($originalNames);
-
-        $names = $this->getElementsNames($elements);
         $names_c = count($names);
 
         usort($originalNames, function($a, $b) {
@@ -73,16 +93,26 @@ class Pimcore_Document_Parser {
 
             for($i=0; $i < $names_c; $i++) {
 
+                echo "\n- $originalNames[$i] -\n";
+
+
                 for($j=0; $j < $originalNames_c; $j++) {
 
                     $c = 0;
 
-                    if(!$ret = preg_replace('/^[0-9\_]*'.preg_quote($names[$i]).'/i', '', $originalNames[$j], 1, $c))
-                        continue;
+                    echo 'try '.$names[$i].' in '.$originalNames[$j].' ('.$originalNames_copy[$j].')';
 
-                    if(!$c)
+                    if(!$ret = preg_replace('/^[0-9\_]*'.preg_quote($names[$i]).'/i', '', $originalNames[$j], 1, $c)) {
+                        echo "\n";
                         continue;
+                    }
 
+                    if(!$c) {
+                        echo "\n";
+                        continue;
+                    }
+
+                    echo " MATCH \n";
                     if(!is_array($originalNames_copy[$j]['matches']))  {
                         $originalNames_copy[$j] = array(
                             'name' => $originalNames_copy[$j],
@@ -91,6 +121,7 @@ class Pimcore_Document_Parser {
                     }
 
                     $originalNames_copy[$j]['matches'][] = $names[$i];
+
                     $originalNames[$j] = $ret;
 
                     $matches++;
@@ -98,6 +129,7 @@ class Pimcore_Document_Parser {
             }
         } while($matches);
 
+        // yay
 
         $skips = array(
             0,
@@ -113,29 +145,30 @@ class Pimcore_Document_Parser {
             0
         );
 
-        $buffer = array();
-
+        $rounds = 0;
         foreach($originalNames_copy as $m) {
+
+            echo $m['name'] . '------'."\n";
 
             $rounds = -1;
             for($i = count($m['matches']) - 1; $i >= 0; $i--) {
 
                 $rounds++;
 
-                if($skips[$rounds])
+                if($skips[$rounds]) {
+                    echo $rounds. ' skip'."\n";
                     continue;
+                }
 
                 if(!isset($m['matches'][$i]))
                     continue;
 
-                if(!isset($buffer[$m['name']]))
-                    $buffer[$m['name']] = array();
-
-                $buffer[$m['name']][] = $m['matches'][$i];
+                echo $rounds. ' take'." ".$m['matches'][$i]."\n";
             }
+
         }
 
-        return $buffer;
     }
+
 
 }
