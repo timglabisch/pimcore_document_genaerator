@@ -100,5 +100,28 @@ class Document_Parser_Test extends PHPUnit_Framework_TestCase {
         );
     }
 
+    function testGetElementsTreeMultipleLength() {
+        $c = new Pimcore_Document_Structure();
+
+        $c
+            ->addChild('AB')
+            ->addChild('BC')
+            ->addChild('CD')
+            ->addChild('DE');
+
+
+        $parser = new Pimcore_Document_Parser('refactor ...');
+
+        $this->assertEquals(
+            array(
+                'DEAB_BCAB1_CDAB_BCAB11_11_1_1' => array('AB','BC','CD', 'DE'),
+                'CDAB_BCAB11_1' => array('AB','BC','CD'),
+                'BCAB1' => array('AB','BC'),
+                'AB' => array('AB')
+            ),
+            $parser->getElementsTree($c->getElements())
+        );
+    }
+
 
 }

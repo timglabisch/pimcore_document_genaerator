@@ -52,6 +52,7 @@ class Pimcore_Document_Parser {
             }
         } while($matches);
 
+        $names = array_map('strrev', $names);
         return $names;
     }
 
